@@ -30,6 +30,7 @@ from langchain.prompts.few_shot import FewShotPromptTemplate
 from langchain.prompts.prompt import PromptTemplate
 from langchain.schema import (
     AgentAction,
+    AgentContinuation,
     AgentFinish,
     BaseOutputParser,
     BasePromptTemplate,
@@ -788,12 +789,20 @@ s
         Override this to take control of how the agent makes and acts on choices.
         """
         try:
-            # Call the LLM to see what to do.
-            output = self.agent.plan(
-                intermediate_steps,
-                callbacks=run_manager.get_child() if run_manager else None,
-                **inputs,
-            )
+            # Keep planning until you get an action or finalization.
+            while True:
+                # Call the LLM to see what to do.
+                output = self.agent.plan(
+                    intermediate_steps,
+                    callbacks=run_manager.get_child() if run_manager else None,
+                    **inputs,
+                )
+                if not isinstance(output, AgentContinuation):
+                    break
+                else:
+                    print("GOT A CONTINUATION: CONTINUIN")
+                    intermediate_steps.extend(output)
+
         except OutputParserException as e:
             if isinstance(self.handle_parsing_errors, bool):
                 raise_error = not self.handle_parsing_errors

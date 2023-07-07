@@ -15,6 +15,10 @@ class AgentAction:
     log: str
     """Additional information to log about the action."""
 
+class AgentContinuation:
+    """The agent finished outputting too early so just run it once again"""
+    log: str
+    """Additional information to log about the action."""
 
 class AgentFinish(NamedTuple):
     """The final return value of an ActionAgent."""

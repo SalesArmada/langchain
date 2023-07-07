@@ -3,7 +3,7 @@ from typing import Union
 
 from langchain.agents.agent import AgentOutputParser
 from langchain.agents.chat.prompt import FORMAT_INSTRUCTIONS
-from langchain.schema import AgentAction, AgentFinish, OutputParserException
+from langchain.schema import AgentAction, AgentContinuation, AgentFinish, OutputParserException
 
 FINAL_ANSWER_ACTION = "Final Answer:"
 
@@ -29,9 +29,11 @@ class ChatOutputParser(AgentOutputParser):
 
         except Exception:
             if not includes_answer:
-                raise OutputParserException(f"Could not parse LLM output: {text}")
-            output = text.split(FINAL_ANSWER_ACTION)[-1].strip()
-            return AgentFinish({"output": output}, text)
+                return AgentContinuation(text)
+                # raise OutputParserException(f"Could not parse LLM output: {text}")
+            return AgentFinish(
+                {"output": text.split(FINAL_ANSWER_ACTION)[-1].strip()}, text
+            )
 
     @property
     def _type(self) -> str:
